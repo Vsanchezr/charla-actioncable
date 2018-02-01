@@ -1,5 +1,17 @@
 <% if current_user %>
-    <%= link_to 'Logout', destroy_user_session_path, method: :delete %>
+  <%= link_to 'Logout', destroy_user_session_path, method: :delete %>
+
+  <div class="lobby-chat">
+    <div id="chat-feed" class="log" data-chatroom="Lobby"></div>
+    <div>
+      <div class='user-name'>
+        <%= current_user.email %>
+      </div>
+      <div class="user-input">
+        <%= text_field_tag :message, nil, class: "chat-input"%>
+      </div>
+    </div>
+  </div>
 <% else %>
-    <%= link_to 'Login', new_user_session_path %>
+  <%= link_to 'Login', new_user_session_path %>
 <% end %>
