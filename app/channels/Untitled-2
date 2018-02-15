@@ -1,0 +1,113 @@
+NECESIDAD
+
+En los últimos años hemos visto el surgimiento de “la web en tiempo real”, y las aplicaciones web que usamos
+diariamente se basan en este concepto. Esto hace posible que veamos aparecer nuevos mensajes en la parte
+superior de las páginas sin tener que mover un dedo.
+
+WEBSOCKET
+
+es una tecnología que proporciona un canal de comunicación bidireccional y full-duplex sobre un único socket TCP.
+Está diseñada para ser implementada en navegadores y servidores web, pero puede utilizarse por cualquier aplicación cliente/servidor.
+
+En HTTP la conexión entre el servidor y el cliente tiene una vida corta: el cliente solicita un recurso al
+servidor, se establece una conexión con él y este le devuelve el recurso solicitado (ya sea JSON, HTML, XML
+o algún otro tipo de archivo). Después de esta petición, se cierra la conexión entre ambos.
+
+Dentro de HTPP, ¿cómo puede saber el cliente si el servidor tiene datos nuevos o actualizados?
+HTTP lo resuelve mediante polling, en el que el cliente “pide” al servidor si hay alguna novedad en un
+intervalo de tiempo dado.
+
+A diferencia de HTTP, WebSockets es un tecnología que permite mantener una conexión abierta entre el cliente
+
+COMO FUNCIONA
+
+El cliente se suscribe a una conexión WebSocket abierta en el servidor y, cuando hay nueva información,
+el servidor transmite los datos y los clientes suscritos la reciben. De esta manera, tanto el servidor como el
+cliente conoce el estado de los datos y puede sincronizar fácilmente los cambios que se producen.
+
+ACTIONCABLE
+
+Una de las novedades que se enunciaron con la llegada de Rails 5 es la solución oficial para integrar websockets con Rails,
+llamada ActionCable.
+
+De acuerdo con el sito oficial, GitHub, de ActionCable: “ActionCable integra perfectamente WebSockets con el resto de tu aplicación Rails.
+Permite desarrollar funciones de tiempo real en Ruby con el mismo estilo y forma que el resto de tu aplicación Rails,
+sin perder en rendimiento y escalabilidad. Proporciona una solución completa tanto desde el lado del cliente con JavaScript
+como del lado del servidor con Ruby. Tienes acceso a tu modelo de dominio completo escrito con Active Record o el ORM de tu elección.”
+
+ActionCable es una muy buena solución para trabajar con los WebSockets y, así, dejar de utilizar gemas para añadir esta funcionalidad.
+Proporciona una interfaz fácil de usar, tanto en el lado del cliente Javascript, como en el del servidor Rails; y, ante todo, siguiendo
+los patrones de diseño de Rails. De esta manera, Rails se actualiza para poder entrar de manera fácil a la web en tiempo real.
+
+
+TERMINOGIA
+
+- Cable: Es la conexión de WebSocket utilizada para comunicar todos los datos de todos los canales.
+- Channel: El canal es una manera organizada y definida de definir el comportamiento con los métodos del servidor y del cliente, mediante el cual un navegador del cliente puede suscribirse y luego comunicarse en ambos sentidos a través de un código de manejo de datos personalizado. La lógica de implementación del lado del servidor se mantiene aquí para las suscripciones.
+- Connection: Lógica del lado del servidor para las acciones de suscripción tomadas desde el navegador de los clientes.
+- Subscription: Cuando un cliente inicia un evento de "crear suscripción", el servidor los mantiene agrupados en una lista de suscriptores del canal para publicar cuando los datos se envían a través del canal determinado. La lógica de implementación del lado del cliente se mantiene aquí por suscripción de canal con nombre.
+
+Lo bueno
+
+ActionCable parece ser lo que Rails necesita para mantener el ritmo con Node.js + Socket.io y más recientemente
+Realtime Django. Cumple con su objetivo de obtener contenido y datos para visitantes de la web en tiempo real muy bien.
+La API es simple, simplemente funciona y se siente como una extensión natural de Rails. Esta simplicidad ciertamente va
+alentar a los desarrolladores de Rails a agregar componentes en tiempo real a los sitios web que están construyendo sin tener que entender
+las complejidades de lo que sucede por abajo
+
+
+- Simple connection objects and shared authentication
+  - Como cada conexión es simplemente un objeto Ruby, y el objeto Ruby es parte de la aplicación Rails, compartir la lógica de su negocio, incluida la autenticación, es increíblemente simple.
+- WebSocket mounted on the same endpoint
+  - simplifica la implementación de forma espectacular y permite compartir cookies.
+- Channel object for each subscription
+  - Los objetos de canal se crean para cada nueva suscripción hecha en cada conexión. Conceptualmente son simples de entender, y Rails se encarga de crear y destruir estos objetos de canal a medida que las suscripciones o sus conexiones subyacentes van y vienen.
+- Redis backed
+  - Usar Redis para alimentar los canales Pub / Sub es una buena opción, es una sólida pieza de ingeniería de software de alto rendimiento.
+- Shared view logic
+  - Debido a que los objetos Channel son parte de la pila de Rails, en teoría ahora es trivial renderizar datos parciales en lugar de solo datos y enviarlos a un cliente ActionCable a través de WebSockets
+
+
+Lo malo
+
+El trabajo realizado en ActionCable por la comunidad de Rails es impresionante, sin embargo, hay que recordar que ActionCable
+no fue diseñado para ser un servicio de mensajería global escalable y robusto, sino que proporciona una comunicación dúplex completa simple
+transporte entre un servidor Rails y un navegador habilitado para WebSocket. Por esta razón, existen deficiencias y por lo mismo es
+importante que los desarrolladores sean conscientes de ellos.
+
+- Single point of failure
+  - ActionCable is backed by Redis Pub/Sub, When your Redis instance is down, so is ActionCable
+- Latency
+  -
+- Message Ordering
+  - Si el orden en que se entregan los mensajes es importante para usted, entonces ActionCable no es una buena opción. Cada mensaje publicado no tiene un número de serie, por lo que es imposible para el receptor que se asegure de que procesa los mensajes en orden.
+- Abrupt failures can corrupt state
+  - Una forma simple de entender el problema es pensar en un caso de uso. Asumiendo que estabas construyendo una simple aplicación de chat que
+realiza un seguimiento de quién está actualmente en línea. Cuando un nuevo suscriptor se conecta a un canal, tal vez podría almacenar los usuarios
+detalles en un conjunto de Redis, y luego al darse de baja eliminarlos. Sin embargo, si un servidor se cancela abruptamente y nunca obtiene un
+posibilidad de eliminar los detalles del usuario de Redis, luego ese usuario será informado como presente indefinidamente en ese canal.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+- routes.rb
+- cable.js
+- connection.rb
+- channel.rb
+- chat_channel.rb
+- chat_lobby.js
+- index.html.erb
