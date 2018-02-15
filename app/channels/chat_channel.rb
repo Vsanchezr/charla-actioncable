@@ -1,5 +1,5 @@
 class ChatChannel < ApplicationCable::Channel
-  def subcribed
+  def subscribed
     stream_for specific_channel
   end
 
